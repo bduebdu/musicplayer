@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>photo/dog.jpg</file>
+        <file>photo/1.jpg</file>
+        <file>photo/2.jpg</file>
+        <file>photo/3.jpg</file>
+        <file>photo/4.jpg</file>
+        <file>photo/5.jpg</file>
+        <file>Icon/prevIcon.png</file>
+        <file>Icon/nextIcon.png</file>
+        <file>Icon/playIcon.png</file>
+        <file>Icon/circulate.png</file>
+        <file>Icon/no_collect.png</file>
+        <file>Icon/post_irc.png</file>
+        <file>Icon/volune.png</file>
+        <file>Icon/pauseIcon.png</file>
+        <file>Icon/random.png</file>
+        <file>Icon/Single.png</file>
+    </qresource>
+</RCC>
