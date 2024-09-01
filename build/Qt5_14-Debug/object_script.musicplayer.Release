@@ -1,0 +1,12 @@
+release/clientsocket.o
+release/customlabel.o
+release/main.o
+release/mainwindow.o
+release/musicmenu.o
+release/onlineplayer.o
+release/qrc_res.o
+release/moc_clientsocket.o
+release/moc_customlabel.o
+release/moc_mainwindow.o
+release/moc_musicmenu.o
+release/moc_onlineplayer.o

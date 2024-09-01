@@ -15,8 +15,6 @@ onlinePlayer::onlinePlayer(QObject *parent) : QObject(parent)
     QString musicPath = "D:\\下载\\music\\夜曲.mp3";
 
 
-
-
     QFileInfo checkInfo(musicPath);
     if(checkInfo.exists()==false)
     {
@@ -49,5 +47,6 @@ onlinePlayer::onlinePlayer(QObject *parent) : QObject(parent)
     player->play();
 
 }
+
 
 

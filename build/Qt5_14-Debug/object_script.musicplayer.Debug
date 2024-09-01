@@ -1,0 +1,12 @@
+debug/clientsocket.o
+debug/customlabel.o
+debug/main.o
+debug/mainwindow.o
+debug/musicmenu.o
+debug/onlineplayer.o
+debug/qrc_res.o
+debug/moc_clientsocket.o
+debug/moc_customlabel.o
+debug/moc_mainwindow.o
+debug/moc_musicmenu.o
+debug/moc_onlineplayer.o

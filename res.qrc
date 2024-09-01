@@ -16,5 +16,7 @@
         <file>Icon/pauseIcon.png</file>
         <file>Icon/random.png</file>
         <file>Icon/Single.png</file>
+        <file>Icon/downloadIcon.png</file>
+        <file>Icon/collect.png</file>
     </qresource>
 </RCC>

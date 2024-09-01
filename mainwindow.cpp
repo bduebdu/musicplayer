@@ -14,6 +14,7 @@
 #include <QJsonDocument>
 #include <QMessageBox>
 #include "musicmenu.h"
+#include "stdShared.h"
 MainWindow::MainWindow(QWidget *parent):
      QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -53,7 +54,7 @@ void MainWindow::handleDataSlot(const QByteArray & data)
     //3.取值
     int type = jsonObj["type"].toInt();
     QString result = jsonObj["result"].toString();
-    if(type ==1)//注册
+    if(type == REGISTER)//注册
     {
         if(result == "success")
         {
@@ -66,7 +67,7 @@ void MainWindow::handleDataSlot(const QByteArray & data)
         }
 
     }
-    else if (type ==2)//登录
+    else if (type == LOGIN)//登录
     {
         if(result == "success")
         {
@@ -99,7 +100,7 @@ void MainWindow::handleRegisSlot()
     //创建json对象
     QJsonObject jsonObj;
     //设置keyvalue
-    jsonObj["type"] = 1;
+    jsonObj["type"] = REGISTER;
     jsonObj["username"] = username;
     jsonObj["passwd"] = passwd;
     //创建document对象
@@ -117,7 +118,7 @@ void MainWindow::handleLoginSlot()
     //创建json对象
     QJsonObject jsonObj;
     //设置keyvalue
-    jsonObj["type"] = 2;
+    jsonObj["type"] = LOGIN;
     jsonObj["username"] = username;
     jsonObj["passwd"] = passwd;
     //创建document对象

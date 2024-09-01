@@ -11,7 +11,6 @@ void customLabel::setHeadImage(const QString & fileName)
     setPixmap(headPic.scaled(125,125,Qt::KeepAspectRatio, Qt::SmoothTransformation));
     m_backupHeadImg = fileName;
 }
-
 //鼠标进入事件
 void customLabel::enterEvent(QEvent * event)
 {
@@ -23,14 +22,12 @@ void customLabel::enterEvent(QEvent * event)
     setAlignment(Qt::AlignCenter); //设置居中
     QLabel::enterEvent(event);//让进入事件回归到父类
 }
-
 //鼠标离开事件
 void customLabel::leaveEvent(QEvent * event)
 {
     setHeadImage(m_backupHeadImg);
     QLabel::leaveEvent(event);//让进入事件回归到父类
 }
-
 //鼠标点击事件
  void customLabel::mousePressEvent(QMouseEvent * event)
  {

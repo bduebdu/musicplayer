@@ -17,22 +17,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    base64.cpp \
     clientsocket.cpp \
     customlabel.cpp \
     main.cpp \
     mainwindow.cpp \
+    musiclist.cpp \
     musicmenu.cpp \
     onlineplayer.cpp
 
 HEADERS += \
+    base64.h \
     clientsocket.h \
     customlabel.h \
     mainwindow.h \
+    musiclist.h \
     musicmenu.h \
-    onlineplayer.h
+    onlineplayer.h \
+    stdShared.h
 
 FORMS += \
     mainwindow.ui \
+    musiclist.ui \
     musicmenu.ui
 
 # Default rules for deployment.
