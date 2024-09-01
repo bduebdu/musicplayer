@@ -65,6 +65,8 @@ MusicMenu::MusicMenu(ClientSocket * cilentInfo,QWidget *parent) :
     connect(ui->searchBtn,&QPushButton::clicked,this,&MusicMenu::handleSearchSlot);
     connect(ui->downloadBtn,&QPushButton::clicked,this,&MusicMenu::handleDownloadSlot);
     connect(ui->radioBtn,&QRadioButton::toggled,this,&MusicMenu::handleMultipleSlot);
+    connect(ui->musicList, &QListWidget::itemClicked, this, &MusicMenu::handleItemClick);
+
 
     connect(m_player,&QMediaPlayer::durationChanged,this,&MusicMenu::handleDurationSlot);
     connect(m_player,&QMediaPlayer::positionChanged,this,&MusicMenu::handlePositionSlot);
@@ -74,6 +76,8 @@ MusicMenu::MusicMenu(ClientSocket * cilentInfo,QWidget *parent) :
     connect(m_clientInfo,&ClientSocket::dataReceived,this,&MusicMenu::handleDataSlot);
     connect(m_clientInfo,&ClientSocket::dataReceived,this,&MusicMenu::handleLyricdataSlot);
     connect(m_clientInfo,&ClientSocket::dataReceived,this,&MusicMenu::handleOnlineListSlot);
+    connect(m_clientInfo,&ClientSocket::dataReceived,this,&MusicMenu::handlehandleMultipleDownloadSlot);
+
 
     connect(ui->loveBtn, &QPushButton::clicked, this, &MusicMenu::handleLoveBtnSlot);
     connect(ui->localBtn, &QPushButton::clicked, this, &MusicMenu::handleLocalBtnSlot);
@@ -116,13 +120,158 @@ MusicMenu::MusicMenu(ClientSocket * cilentInfo,QWidget *parent) :
 
 }
 
+
+void MusicMenu::handlehandleMultipleDownloadSlot(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if (doc.isNull() || error.error != QJsonParseError::NoError)
+    {
+        qDebug() << "Failed to parse JSON data.";
+        return;
+    }
+
+    if (doc.isObject())
+    {
+        QJsonObject rootObj = doc.object();
+        if (rootObj.contains("type") && rootObj.value("type").toInt() == MULTIPLE_DONLOAD)
+        {
+            if (rootObj.contains("musiclist") && rootObj.value("musiclist").isArray())
+            {
+                QJsonArray musicList = rootObj.value("musiclist").toArray();
+                for (const QJsonValue &musicValue : musicList)
+                {
+                    if (musicValue.isObject())
+                    {
+                        QJsonObject musicObj = musicValue.toObject();
+                        QString musicName = musicObj.value("musicname").toString();
+                        QString musicContent = musicObj.value("musiccontent").toString();
+                        QString lyricsContent = musicObj.value("lyricscontent").toString();
+
+                        // 保存音乐文件
+                        QString musicFilePath = QStringLiteral("D:\\下载\\music\\%1.mp3").arg(musicName);
+                        QFile musicFile(musicFilePath);
+                        if (musicFile.open(QIODevice::WriteOnly))
+                        {
+                            QByteArray decodedMusicData = QByteArray::fromBase64(musicContent.toUtf8());
+                            musicFile.write(decodedMusicData);
+                            musicFile.close();
+                            qDebug() << "Music file saved:" << musicFilePath;
+                        }
+                        else
+                        {
+                            qDebug() << "Failed to save music file:" << musicFilePath;
+                        }
+
+                        // 保存歌词文件
+                        QString lyricsFilePath = QStringLiteral("D:\\下载\\music\\%1.lrc").arg(musicName);
+                        QFile lyricsFile(lyricsFilePath);
+                        if (lyricsFile.open(QIODevice::WriteOnly | QIODevice::Text))
+                        {
+                            QByteArray decodedLyricsData = QByteArray::fromBase64(lyricsContent.toUtf8());
+                            QTextStream stream(&lyricsFile);
+                            stream.setCodec("UTF-8"); // 设置编码为UTF-8
+                            stream << decodedLyricsData;
+                            lyricsFile.close();
+                            qDebug() << "Lyrics file saved:" << lyricsFilePath;
+                        }
+                        else
+                        {
+                            qDebug() << "Failed to save lyrics file:" << lyricsFilePath;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void MusicMenu::handleItemClick(QListWidgetItem *item)
+{
+    if (!ismultiple)//单击不进多选
+    {
+        return;
+    }
+    QString musicName = item->text();
+
+    // 检查歌曲是否已经在 m_selectedSongs 中
+    int index = m_selectedSongs.indexOf(musicName);
+    if (index != -1)
+    {
+        // 如果歌曲已在列表中，则移除
+        m_selectedSongs.removeAt(index);
+        item->setSelected(false); // 取消高亮
+    }
+    else
+    {
+        // 如果歌曲不在列表中，则添加
+        m_selectedSongs.append(musicName);
+        item->setSelected(true); // 高亮
+    }
+    // 输出当前选中的歌曲名
+    qDebug() << "Selected Songs:";
+    for (const QString& name : m_selectedSongs)
+    {
+        qDebug() << "  -" << name;
+    }
+
+}
+
 void MusicMenu::handleMultipleSlot(bool checked)//多选
 {
        ismultiple = checked;
+       // 根据 ismultiple 的值设置选择模式
+       if (ismultiple)
+       {
+           ui->musicList->setSelectionMode(QAbstractItemView::MultiSelection);
+       }
+       else
+       {
+           ui->musicList->setSelectionMode(QAbstractItemView::SingleSelection);
+       }
 }
 
-void MusicMenu::handleDownloadSlot()
+void MusicMenu::handleDownloadSlot()//发送多选下载指令或者执行单选下载保存
 {
+    if(ismultiple)
+    {
+        if(m_selectedSongs.size()!=0)
+        {
+            // 创建一个 JSON 对象
+            QJsonObject jsonRootObject;
+
+            // 设置 type 字段为 MULTIPLE_DOWNLOAD
+            jsonRootObject["type"] = MULTIPLE_DONLOAD;
+
+            // 创建一个 JSON 数组用于存储歌曲名称
+            QJsonArray musicNamesArray;
+
+            // 遍历 m_selectedSongs 并添加到 JSON 数组中
+            for (const QString& musicName : m_selectedSongs)
+            {
+                musicNamesArray.append(musicName);
+            }
+
+            // 将 JSON 数组添加到根对象中
+            jsonRootObject["musicnames"] = musicNamesArray;
+
+            // 创建 JSON 文档
+            QJsonDocument jsonDoc(jsonRootObject);
+
+            // 将 JSON 文档转换为 QByteArray
+            QByteArray jsonData = jsonDoc.toJson(QJsonDocument::Compact);
+
+            // 发送给服务器
+            m_clientInfo->writeData(jsonData);
+
+        }
+        else
+        {
+            QMessageBox::information(this,"下载","未选择下载歌曲");
+        }
+        return;
+    }
+
     qDebug() << "下载音乐" << endl;
 
     if (m_musicName.isEmpty() || m_musicData.isEmpty())
@@ -316,6 +465,7 @@ void MusicMenu::handleVolumeChange(int value)
 // 显示指定的歌曲列表
 void MusicMenu::displaySongs(const QVector<QString> &songs)
 {
+    ui->radioBtn->setChecked(false);
     ui->musicList->clear(); // 清空列表
     for (const QString &song : songs)
     {
@@ -332,18 +482,6 @@ void MusicMenu::handleLoveBtnSlot()
     displaySongs(m_favoriteSongs); // 切换到喜爱的歌曲列表
 
     ui->musicList->setCurrentRow(0);
-//    // 保存当前播放歌曲的名称和索引
-//    QString currentSongName = ui->musicList->currentItem()->text();
-//    // 切换后恢复之前的播放状态
-//    int restoredIndex = m_favoriteSongs.indexOf(currentSongName);
-//    if (restoredIndex != -1)
-//    {
-//        ui->musicList->setCurrentRow(restoredIndex);
-//    }
-//    else
-//    {
-//        ui->musicList->setCurrentRow(0); // 如果没有找到，默认选中第一首
-//    }
 
 }
 // 点击本地按钮时显示所有歌曲
@@ -355,18 +493,6 @@ void MusicMenu::handleLocalBtnSlot()
     loadAppointMusicPath(m_musicPath);
     displaySongs(m_allSongs); // 切换到本地所有歌曲列表
     ui->musicList->setCurrentRow(0);
-//    // 保存当前播放歌曲的名称和索引
-//    QString currentSongName = ui->musicList->currentItem()->text();
-//    // 切换后恢复之前的播放状态
-//    int restoredIndex = m_allSongs.indexOf(currentSongName);
-//    if (restoredIndex != -1)
-//    {
-//        ui->musicList->setCurrentRow(restoredIndex);
-//    }
-//    else
-//    {
-//        ui->musicList->setCurrentRow(0); // 如果没有找到，默认选中第一首
-//    }
 
 }
 // 点击在线按钮时搜索并显示在线歌曲
@@ -512,6 +638,10 @@ void MusicMenu::closeEvent(QCloseEvent *event)//关闭事件
 
 void MusicMenu::handleDoubleClickSlot(QListWidgetItem *item)
 {
+    if(ismultiple)
+    {
+        return;//多选不进双击
+    }
     // 设置当前选中的行
     ui->musicList->setCurrentItem(item);
     if(m_currentType==Online)
@@ -524,12 +654,8 @@ void MusicMenu::handleDoubleClickSlot(QListWidgetItem *item)
         ui->searchMusic->clear();
         return;
     }
-
     // 播放指定的歌曲
     startAppointMusic();
-
-
-
 }
 
 void MusicMenu::handleStateChangeSlot()//音乐状态改变(播完放下一首)
@@ -995,7 +1121,8 @@ void MusicMenu::handleLyricSlot()
 void MusicMenu::handleCollectSlot()//喜爱音乐
 {
     // 检查当前列表是否为空
-    if (ui->musicList->count() == 0) {
+    if (ui->musicList->count() == 0)
+    {
         QMessageBox::information(this, "提示", "无法收藏。");
         return;
     }

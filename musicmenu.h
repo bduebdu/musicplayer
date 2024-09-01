@@ -65,6 +65,7 @@ public:
     void writeSettings();
     void readSettings();
     QListWidgetItem* findLyricItemByTimestamp(quint32 timestamp);
+
 private:
 
     Ui::MusicMenu *ui;
@@ -100,6 +101,7 @@ private:
     QVector<QString> m_allSongs; // 保存所有歌曲
     QVector<QString> m_favoriteSongs; // 保存喜爱歌曲
     QVector<QString> m_onlineSongs;//保存在线歌曲
+    QVector<QString> m_selectedSongs;//保存选中歌曲
 
 
     QString m_musicName;    // 用于存储音乐名称
@@ -108,7 +110,6 @@ private:
     bool ismultiple;  // 是否批量下载
     bool readsetting;//读一次设置
     bool onlinecache;//在线记忆修复
-
 
 
 
@@ -131,9 +132,11 @@ private slots:
     void handleTimeoutSlot();//处理定时器超时
     void handleStateChangeSlot();//音乐状态改变
     void handleDoubleClickSlot(QListWidgetItem *item);//双击
+    void handleItemClick(QListWidgetItem *item);//单击
     void handleDataSlot(const QByteArray & data);//接收音乐数据
     void handleLyricdataSlot(const QByteArray & data);//接收歌词数据
     void handleOnlineListSlot(const QByteArray & data);//接收音乐列表
+    void handlehandleMultipleDownloadSlot(const QByteArray & data); //接收多选下载数据
 
     void handleLoveBtnSlot();// 点击喜爱按钮时显示喜爱歌曲
     void handleLocalBtnSlot();// 点击本地按钮时显示所有歌曲

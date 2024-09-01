@@ -14,7 +14,7 @@ enum FUNCTION_OPTION
     SEARCH_MUSIC,             //搜索音乐
     SEARCH_LYRIC,             //搜索歌词
     ONLINE_LIST,             //在线列表
-
+    MULTIPLE_DONLOAD,        //批量下载
 };
 
 enum REPLY_CODE
